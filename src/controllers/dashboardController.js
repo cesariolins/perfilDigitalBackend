@@ -102,7 +102,7 @@ exports.dadosGraficos = async (req, res) => {
     const usoPrincipal = await sequelize.query(`
       SELECT 
         p.uso_principal,
-        COUNT(*) as total
+        COUNT(*)::integer as total
       FROM respostas_perfil p
       INNER JOIN respondentes r ON p.respondente_id = r.id
       GROUP BY p.uso_principal
