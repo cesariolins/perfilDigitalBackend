@@ -28,7 +28,7 @@ const RespostaPerfil = sequelize.define('RespostaPerfil', {
   uso_principal: DataTypes.STRING(100)
 }, {
   tableName: 'respostas_perfil',
-  timestamps: true,
+  timestamps: false,
   updatedAt: false
 })
 

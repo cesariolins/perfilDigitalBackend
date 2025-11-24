@@ -30,7 +30,7 @@ const Resultado = sequelize.define('Resultado', {
   }
 }, {
   tableName: 'resultados',
-  timestamps: true,
+  timestamps: false,
   updatedAt: false
 })
 

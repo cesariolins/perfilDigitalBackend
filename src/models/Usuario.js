@@ -39,7 +39,7 @@ const Usuario = sequelize.define('Usuario', {
   }
 }, {
   tableName: 'usuarios',
-  timestamps: true,
+  timestamps: false,
   hooks: {
     beforeCreate: async (usuario) => {
       if (usuario.senha) {

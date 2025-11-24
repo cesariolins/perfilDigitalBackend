@@ -38,7 +38,7 @@ const RespostaQuestionario = sequelize.define('RespostaQuestionario', {
   pergunta_20: { type: DataTypes.INTEGER, validate: { min: 0, max: 5 } }
 }, {
   tableName: 'respostas_questionario',
-  timestamps: true,
+  timestamps: false,
   updatedAt: false
 })
 
