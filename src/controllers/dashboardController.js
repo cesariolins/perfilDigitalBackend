@@ -309,7 +309,56 @@ exports.exportarExcel = async (req, res) => {
         message: 'Nenhum dado encontrado para exportar'
       })
     }
-    // ... (restante do código para gerar o Excel)
+
+    // Cria workbook
+    const wb = XLSX.utils.book_new()
+    
+    // Converte dados para sheet
+    const ws = XLSX.utils.json_to_sheet(dados)
+    
+    // Ajusta largura das colunas
+    const wscols = [
+      { wch: 20 }, // Código
+      { wch: 18 }, // Data/Hora
+      { wch: 10 }, // Pontuação
+      { wch: 35 }, // Classificação
+      { wch: 15 }, // Idade
+      { wch: 15 }, // Gênero
+      { wch: 15 }, // Região
+      { wch: 20 }, // Localidade
+      { wch: 20 }, // Ocupação
+      { wch: 25 }, // Escolaridade
+      { wch: 20 }, // Renda
+      { wch: 20 }, // Dispositivo
+      { wch: 15 }, // Horário
+      { wch: 30 }, // Uso Principal
+    ]
+    
+    // Adiciona 20 colunas para as perguntas (P1-P20)
+    for (let i = 0; i < 20; i++) {
+      wscols.push({ wch: 5 })
+    }
+    
+    ws['!cols'] = wscols
+    
+    // Adiciona sheet ao workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Respostas DigiSaúde')
+
+    // Gera buffer
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
+
+    console.log('✅ Excel gerado com sucesso!')
+
+    // Define headers para download
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+    const filename = `digisaude_relatorio_${timestamp}.xlsx`
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.setHeader('Content-Length', buffer.length)
+
+    res.send(buffer)
+
   } catch (error) {
     console.error('❌ Erro ao exportar Excel:', error)
     res.status(500).json({
