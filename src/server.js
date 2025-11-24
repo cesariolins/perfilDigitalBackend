@@ -11,23 +11,15 @@ require('./models/Resultado')
 require('./models/Usuario') // Se você tiver um model de usuário para o dashboard
 
 // Importa as rotas
-console.log('Attempting to mount /api/auth');
 const authRoutes = require('./routes/authRoutes')
-console.log('/api/auth mounted')
-
-console.log('Attempting to mount /api/questionario');
 const questionarioRoutes = require('./routes/questionarioRoutes')
-console.log('/api/questionario mounted');
-
-console.log('Attempting to mount /api/dashboard');
 const dashboardRoutes = require('./routes/dashboardRoutes')
-console.log('/api/dashboard mounted');
+
+const app = express()
 
 console.log('Auth Routes imported:', authRoutes instanceof express.Router); // Adicione esta linha
 console.log('Questionario Routes imported:', questionarioRoutes instanceof express.Router); // Adicione esta linha
 console.log('Dashboard Routes imported:', dashboardRoutes instanceof express.Router); // Adicione esta linha
-
-const app = express()
 
 // Middlewares globais
 app.use(cors({
