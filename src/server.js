@@ -1,24 +1,31 @@
 const express = require('express')
 const cors = require('cors')
-require('dotenv').config()
-const sequelize = require('./config/database')
+require('dotenv').config() // Carrega variáveis de ambiente do .env localmente
+
+const sequelize = require('./config/database') // Importa a instância do Sequelize
+// Importa os models para que o Sequelize possa sincronizá-los
+require('./models/Respondente')
+require('./models/RespostaPerfil')
+require('./models/RespostaQuestionario')
+require('./models/Resultado')
+require('./models/Usuario') // Se você tiver um model de usuário para o dashboard
 
 // Importa as rotas
 const authRoutes = require('./routes/authRoutes')
-const questionarioRoutes = require('./routes/questionarioRoutes') // ← REMOVA A DUPLICAÇÃO
+const questionarioRoutes = require('./routes/questionarioRoutes')
 const dashboardRoutes = require('./routes/dashboardRoutes')
 
 const app = express()
 
 // Middlewares globais
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Permite requisições do frontend
+  credentials: true // Permite o envio de cookies/cabeçalhos de autorização
 }))
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json()) // Para parsear JSON no corpo das requisições
+app.use(express.urlencoded({ extended: true })) // Para parsear dados de formulário
 
-// Log de requisições (desenvolvimento)
+// Log de requisições (apenas em desenvolvimento)
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`)
@@ -28,10 +35,10 @@ if (process.env.NODE_ENV === 'development') {
 
 // Rotas
 app.use('/api/auth', authRoutes)
-app.use('/api/questionario', questionarioRoutes) // ← SÓ UMA VEZ
+app.use('/api/questionario', questionarioRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 
-// Rota de teste
+// Rota de teste de saúde da API
 app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
@@ -40,7 +47,7 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// Rota 404
+// Rota 404 (para rotas não encontradas)
 app.use((req, res) => {
   res.status(404).json({ 
     success: false, 
@@ -54,23 +61,33 @@ app.use((err, req, res, next) => {
   res.status(500).json({ 
     success: false, 
     message: 'Erro interno do servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined // Mostra detalhes do erro apenas em dev
   })
 })
 
 // Inicia o servidor
-const PORT = process.env.PORT || 5000
-
+const PORT = process.env.PORT || 10000 // Usa a porta do ambiente (Render) ou 10000 como fallback
 app.listen(PORT, async () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`)
   console.log(`📡 Ambiente: ${process.env.NODE_ENV || 'development'}`)
-  console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`)
+  console.log(`🌐 Frontend URL para CORS: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`)
 
-  // Testa conexão com banco
+  // Testa conexão com banco e sincroniza os models
   try {
     await sequelize.authenticate()
-    console.log('✅ Conexão com MySQL estabelecida com sucesso!')
+    console.log('✅ Conexão com o banco de dados estabelecida com sucesso!')
+
+    // Sincroniza os models com o banco de dados (cria tabelas se não existirem, ou as altera)
+    // Use { alter: true } para tentar fazer alterações sem perder dados existentes.
+    // Para o primeiro deploy, { force: true } também funcionaria, mas apagaria dados se já existissem.
+    // IMPORTANTE: REMOVA OU COMENTE A LINHA ABAIXO APÓS O PRIMEIRO DEPLOY BEM SUCEDIDO
+    // PARA EVITAR ALTERAÇÕES INDESEJADAS OU LENTIDÃO EM PRODUÇÃO!
+    await sequelize.sync({ alter: true }) 
+    console.log('✅ Models sincronizados com o banco de dados!')
+
   } catch (error) {
-    console.error('❌ Erro ao conectar no banco:', error)
+    console.error('❌ Erro ao conectar ou sincronizar o banco:', error)
+    // Em produção, você pode querer sair do processo se o banco não conectar
+    // process.exit(1); 
   }
 })
