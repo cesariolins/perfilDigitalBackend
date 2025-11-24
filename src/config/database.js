@@ -1,41 +1,40 @@
-const { Sequelize } = require('sequelize')
-require('dotenv').config()
+require('dotenv').config(); // Garante que as variáveis de ambiente sejam carregadas
+const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    dialect: 'mysql',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    },
-    define: {
-      timestamps: true,
-      underscored: true,
-      createdAt: 'created_at',
-      updatedAt: 'updated_at'
+// Render geralmente fornece a URL do banco de dados em uma variável de ambiente DATABASE_URL
+// Ou você pode usar a External Database URL que você anotou
+const databaseUrl = process.env.DATABASE_URL; 
+
+if (!databaseUrl) {
+  console.error("DATABASE_URL não definida. Verifique suas variáveis de ambiente.");
+  // Fallback para ambiente local se DATABASE_URL não estiver definida
+  module.exports = new Sequelize(
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+      host: process.env.DB_HOST,
+      dialect: 'mysql', // Mantenha 'mysql' para desenvolvimento local se ainda usar MySQL
+      logging: false,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false // Para ambientes de desenvolvimento ou se o certificado for autoassinado
+        }
+      }
     }
-  }
-)
-
-// Testa a conexão
-const testConnection = async () => {
-  try {
-    await sequelize.authenticate()
-    console.log('✅ Conexão com MySQL estabelecida com sucesso!')
-  } catch (error) {
-    console.error('❌ Erro ao conectar ao MySQL:', error)
-    process.exit(1)
-  }
+  );
+} else {
+  // Configuração para PostgreSQL no Render
+  module.exports = new Sequelize(databaseUrl, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    logging: false, // Desabilita logs do Sequelize
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false // Necessário para Render/Heroku com SSL
+      }
+    }
+  });
 }
-
-testConnection()
-
-module.exports = sequelize
