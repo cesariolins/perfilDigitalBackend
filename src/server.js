@@ -11,9 +11,9 @@ require('./models/Resultado')
 require('./models/Usuario') // Se você tiver um model de usuário para o dashboard
 
 // Importa as rotas
-const authRoutes = require('./routes/authRoutes')
-const questionarioRoutes = require('./routes/questionarioRoutes')
-const dashboardRoutes = require('./routes/dashboardRoutes')
+const authRoutes = require('./src/routes/authRoutes')
+const questionarioRoutes = require('./src/routes/questionarioRoutes')
+const dashboardRoutes = require('./src/routes/dashboardRoutes')
 
 const app = express()
 
