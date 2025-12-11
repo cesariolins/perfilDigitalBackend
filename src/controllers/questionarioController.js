@@ -4,12 +4,12 @@ const RespostaPerfil = require('../models/RespostaPerfil')
 const RespostaQuestionario = require('../models/RespostaQuestionario')
 const Resultado = require('../models/Resultado')
 const { calcularPontuacao, gerarRecomendacoes } = require('../utils/calcularPontuacao')
-const { enviarCapiba } = require('../utils/capibaService') // Assumindo que você tem este serviço
-const sequelize = require('../config/database') // Importar sequelize para transações
-const { QueryTypes } = require('sequelize') // Para usar QueryTypes.INSERT, etc.
+const { enviarCapiba } = require('../utils/capibaService') 
+const sequelize = require('../config/database')
+const { QueryTypes } = require('sequelize') 
 
 class QuestionarioController {
-  // Valida CPF e verifica se já respondeu
+
   async validarCPF(req, res) {
     try {
       const { cpf } = req.body
@@ -21,10 +21,10 @@ class QuestionarioController {
         })
       }
 
-      // Remove formatação do CPF
+
       const cpfLimpo = cpf.replace(/\D/g, '')
 
-      // Verifica se já existe respondente com esse CPF
+
       const respondente = await Respondente.findOne({ where: { cpf: cpfLimpo } })
 
       if (respondente) {
@@ -49,7 +49,7 @@ class QuestionarioController {
     }
   }
 
-  // Inicia o questionário (cria o respondente)
+
   async iniciarQuestionario(req, res) {
     try {
       const { cpf } = req.body
@@ -63,7 +63,7 @@ class QuestionarioController {
 
       const cpfLimpo = cpf.replace(/\D/g, '')
 
-      // Verifica novamente se não existe
+
       const existe = await Respondente.findOne({ where: { cpf: cpfLimpo } })
       if (existe) {
         return res.status(409).json({
@@ -72,10 +72,9 @@ class QuestionarioController {
         })
       }
 
-      // Cria código anônimo único
       const codigoAnonimo = uuidv4()
 
-      // Cria o respondente
+
       const respondente = await Respondente.create({
         cpf: cpfLimpo,
         codigo_anonimo: codigoAnonimo
@@ -96,19 +95,16 @@ class QuestionarioController {
     }
   }
 
-  // Salva a Seção 0 (Perfil do Participante) - Este método não será mais usado diretamente pelo frontend
-  // O método `responderQuestionario` unificará o salvamento do perfil e das respostas
   async salvarPerfil(req, res) {
     return res.status(400).json({ success: false, message: 'Este endpoint não é mais usado. Use /responder.' })
   }
 
-  // Salva as respostas do questionário - Este método não será mais usado diretamente pelo frontend
-  // O método `responderQuestionario` unificará o salvamento do perfil e das respostas
+
   async salvarRespostas(req, res) {
     return res.status(400).json({ success: false, message: 'Este endpoint não é mais usado. Use /responder.' })
   }
 
-  // Busca o resultado de um respondente
+
   async buscarResultado(req, res) {
     try {
       const { respondente_id } = req.params
@@ -142,7 +138,7 @@ class QuestionarioController {
     }
   }
 
-  // Método unificado para responder o questionário completo
+
   async responderQuestionario(req, res) {
     const transaction = await sequelize.transaction()
     try {
@@ -156,12 +152,11 @@ class QuestionarioController {
 
       const cpfLimpo = cpf.replace(/\D/g, '')
 
-      // 1. Encontrar ou criar o Respondente
+
       let respondente = await Respondente.findOne({ where: { cpf: cpfLimpo }, transaction })
 
       if (!respondente) {
-        // Se o respondente não existe (o que não deveria acontecer se o fluxo do frontend for correto),
-        // cria um novo. Isso pode acontecer se o usuário pular a etapa de CPF.
+
         const codigoAnonimo = uuidv4()
         respondente = await Respondente.create({
           cpf: cpfLimpo,
@@ -169,7 +164,7 @@ class QuestionarioController {
         }, { transaction })
         console.log('Respondente criado (não deveria ter sido necessário se o fluxo do frontend for seguido).')
       } else {
-        // Se o respondente já existe, verifica se já respondeu o questionário completo
+
         const jaRespondeu = await Resultado.findOne({ where: { respondente_id: respondente.id }, transaction })
         if (jaRespondeu) {
           await transaction.rollback()
@@ -178,8 +173,7 @@ class QuestionarioController {
       }
 
       const respondente_id = respondente.id
-
-      // 2. Salvar respostas de perfil
+  
       await RespostaPerfil.create({
         respondente_id,
         idade: perfil.idade,
@@ -196,33 +190,28 @@ class QuestionarioController {
 
       console.log('Perfil salvo')
 
-      // 3. Salvar respostas do questionário
-      // O objeto `questionario` já vem no formato { pergunta_1: pontos, pergunta_2: pontos, ... }
+
       await RespostaQuestionario.create({
         respondente_id,
-        ...questionario // Espalha todas as perguntas e seus pontos
+        ...questionario
       }, { transaction })
 
       console.log('Questionário salvo')
 
-      // 4. Calcular e salvar resultado
-      const { classificacao } = calcularPontuacao(questionario) // calcularPontuacao agora recebe o objeto questionario
+
+      const { classificacao } = calcularPontuacao(questionario)
       const recomendacoes = gerarRecomendacoes(classificacao)
 
       await Resultado.create({
         respondente_id,
         pontuacao_total,
         classificacao,
-        recomendacoes // Salva as recomendações também
+        recomendacoes
       }, { transaction })
 
       console.log('Resultado salvo')
 
-      // 5. Enviar Capiba (se aplicável)
-      // await enviarCapiba(respondente.cpf, 10) // Exemplo: envia 10 capibas
-      // console.log('10 Capibas enviadas para o CPF:', respondente.cpf)
 
-      // Commit da transação
       await transaction.commit()
 
       res.json({

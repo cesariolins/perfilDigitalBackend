@@ -54,7 +54,7 @@ const Usuario = sequelize.define('Usuario', {
   }
 })
 
-// Método para comparar senha
+
 Usuario.prototype.compararSenha = async function(senhaFornecida) {
   return await bcrypt.compare(senhaFornecida, this.senha)
 }

@@ -9,8 +9,8 @@ const Respondente = sequelize.define('Respondente', {
     primaryKey: true
   },
   cpf: {
-    type: DataTypes.STRING(11), // CPF sem formatação tem 11 dígitos
-    allowNull: false, // ESSA LINHA É CRÍTICA!
+    type: DataTypes.STRING(11), 
+    allowNull: false,
     unique: true
   },
   codigo_anonimo: {
@@ -24,7 +24,7 @@ const Respondente = sequelize.define('Respondente', {
   }
 }, {
   tableName: 'respondentes',
-  timestamps: false // Se você não quer created_at e updated_at automáticos
+  timestamps: false 
 })
 
 module.exports = Respondente

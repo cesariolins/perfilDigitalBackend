@@ -34,7 +34,7 @@ const Resultado = sequelize.define('Resultado', {
   updatedAt: false
 })
 
-// Relacionamento
+
 Resultado.belongsTo(Respondente, { foreignKey: 'respondente_id', as: 'respondente' })
 Respondente.hasOne(Resultado, { foreignKey: 'respondente_id', as: 'resultado' })
 

@@ -3,7 +3,7 @@ const Usuario = require('../models/Usuario')
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // Pega o token do header
+
     const token = req.headers.authorization?.split(' ')[1]
 
     if (!token) {
@@ -13,10 +13,10 @@ const authMiddleware = async (req, res, next) => {
       })
     }
 
-    // Verifica o token
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-    // Busca o usuário
+
     const usuario = await Usuario.findByPk(decoded.id, {
       attributes: { exclude: ['senha'] }
     })
@@ -28,7 +28,7 @@ const authMiddleware = async (req, res, next) => {
       })
     }
 
-    // Adiciona o usuário na requisição
+
     req.usuario = usuario
     next()
   } catch (error) {

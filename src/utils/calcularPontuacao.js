@@ -1,15 +1,11 @@
-/**
- * Calcula a pontuação total do questionário
- * e retorna a classificação do usuário
- */
 
 function calcularPontuacao(respostas) {
-  // Soma todas as 20 perguntas (valores de 0 a 5)
+
   const pontuacao = Object.values(respostas).reduce((acc, valor) => {
     return acc + parseInt(valor || 0)
   }, 0)
 
-  // Determina a classificação baseada na pontuação
+
   let classificacao = ''
 
   if (pontuacao >= 81 && pontuacao <= 100) {
@@ -25,9 +21,7 @@ function calcularPontuacao(respostas) {
   return { pontuacao, classificacao }
 }
 
-/**
- * Gera recomendações personalizadas baseadas na classificação
- */
+
 function gerarRecomendacoes(classificacao) {
   const recomendacoes = {
     'Uso saudável e equilibrado': `

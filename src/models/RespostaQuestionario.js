@@ -42,7 +42,7 @@ const RespostaQuestionario = sequelize.define('RespostaQuestionario', {
   updatedAt: false
 })
 
-// Relacionamento
+
 RespostaQuestionario.belongsTo(Respondente, { foreignKey: 'respondente_id', as: 'respondente' })
 Respondente.hasOne(RespostaQuestionario, { foreignKey: 'respondente_id', as: 'respostas' })
 

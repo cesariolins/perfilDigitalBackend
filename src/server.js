@@ -2,34 +2,34 @@ const express = require('express')
 const cors = require('cors')
 require('dotenv').config() 
 
-const sequelize = require('./config/database') // Importa a instância do Sequelize
-// Importa os models para que o Sequelize possa sincronizá-los
+const sequelize = require('./config/database') 
+
 require('./models/Respondente')
 require('./models/RespostaPerfil')
 require('./models/RespostaQuestionario')
 require('./models/Resultado')
-require('./models/Usuario') // Se você tiver um model de usuário para o dashboard
+require('./models/Usuario')
 
-// Importa as rotas
+
 const authRoutes = require('./routes/authRoutes')
 const questionarioRoutes = require('./routes/questionarioRoutes')
 const dashboardRoutes = require('./routes/dashboardRoutes')
 
 const app = express()
 
-console.log('Auth Routes imported:', authRoutes instanceof express.Router); // Adicione esta linha
-console.log('Questionario Routes imported:', questionarioRoutes instanceof express.Router); // Adicione esta linha
-console.log('Dashboard Routes imported:', dashboardRoutes instanceof express.Router); // Adicione esta linha
+console.log('Auth Routes imported:', authRoutes instanceof express.Router);
+console.log('Questionario Routes imported:', questionarioRoutes instanceof express.Router); 
+console.log('Dashboard Routes imported:', dashboardRoutes instanceof express.Router); 
 
-// Middlewares globais
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Permite requisições do frontend
-  credentials: true // Permite o envio de cookies/cabeçalhos de autorização
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true 
 }))
-app.use(express.json()) // Para parsear JSON no corpo das requisições
-app.use(express.urlencoded({ extended: true })) // Para parsear dados de formulário
+app.use(express.json()) 
+app.use(express.urlencoded({ extended: true })) 
 
-// Log de requisições (apenas em desenvolvimento)
+
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`)
@@ -51,7 +51,7 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// Rota 404 (para rotas não encontradas)
+
 app.use((req, res) => {
   res.status(404).json({ 
     success: false, 
@@ -59,39 +59,34 @@ app.use((req, res) => {
   })
 })
 
-// Tratamento de erros global
+
 app.use((err, req, res, next) => {
   console.error('Erro global:', err)
   res.status(500).json({ 
     success: false, 
     message: 'Erro interno do servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined // Mostra detalhes do erro apenas em dev
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined 
   })
 })
 
-// Inicia o servidor
-const PORT = process.env.PORT || 10000 // Usa a porta do ambiente (Render) ou 10000 como fallback
+
+const PORT = process.env.PORT || 10000 
 app.listen(PORT, async () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`)
   console.log(`📡 Ambiente: ${process.env.NODE_ENV || 'development'}`)
   console.log(`🌐 Frontend URL para CORS: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`)
 
-  // Testa conexão com banco e sincroniza os models
+
   try {
     await sequelize.authenticate()
     console.log('✅ Conexão com o banco de dados estabelecida com sucesso!')
 
-    // Sincroniza os models com o banco de dados (cria tabelas se não existirem, ou as altera)
-    // Use { alter: true } para tentar fazer alterações sem perder dados existentes.
-    // Para o primeiro deploy, { force: true } também funcionaria, mas apagaria dados se já existissem.
-    // IMPORTANTE: REMOVA OU COMENTE A LINHA ABAIXO APÓS O PRIMEIRO DEPLOY BEM SUCEDIDO
-    // PARA EVITAR ALTERAÇÕES INDESEJADAS OU LENTIDÃO EM PRODUÇÃO!
+
     await sequelize.sync({ alter: true }) 
     console.log('✅ Models sincronizados com o banco de dados!')
 
   } catch (error) {
     console.error('❌ Erro ao conectar ou sincronizar o banco:', error)
-    // Em produção, você pode querer sair do processo se o banco não conectar
-    // process.exit(1); 
+
   }
 })

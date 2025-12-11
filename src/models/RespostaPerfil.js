@@ -32,7 +32,7 @@ const RespostaPerfil = sequelize.define('RespostaPerfil', {
   updatedAt: false
 })
 
-// Relacionamento
+
 RespostaPerfil.belongsTo(Respondente, { foreignKey: 'respondente_id', as: 'respondente' })
 Respondente.hasOne(RespostaPerfil, { foreignKey: 'respondente_id', as: 'perfil' })
 

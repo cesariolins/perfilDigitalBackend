@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 const Usuario = require('../models/Usuario')
 
 class AuthController {
-  // Login de gestor/admin
+
   async login(req, res) {
     try {
       const { cpf, senha } = req.body
@@ -14,10 +14,10 @@ class AuthController {
         })
       }
 
-      // Remove formatação do CPF
+
       const cpfLimpo = cpf.replace(/\D/g, '')
 
-      // Busca o usuário pelo CPF
+
       const usuario = await Usuario.findOne({ where: { cpf: cpfLimpo } })
 
       if (!usuario) {
@@ -27,7 +27,7 @@ class AuthController {
         })
       }
 
-      // Compara a senha
+
       const senhaValida = await usuario.compararSenha(senha)
 
       if (!senhaValida) {
@@ -37,7 +37,7 @@ class AuthController {
         })
       }
 
-      // Gera o token JWT
+
       const token = jwt.sign(
         { 
           id: usuario.id, 
@@ -69,7 +69,7 @@ class AuthController {
     }
   }
 
-  // Registrar novo gestor (apenas admin pode fazer isso)
+
   async registrar(req, res) {
     try {
       const { nome, cpf, email, senha, tipo, instituicao } = req.body
@@ -83,7 +83,7 @@ class AuthController {
 
       const cpfLimpo = cpf.replace(/\D/g, '')
 
-      // Verifica se já existe
+
       const existe = await Usuario.findOne({ 
         where: { cpf: cpfLimpo } 
       })
@@ -95,7 +95,7 @@ class AuthController {
         })
       }
 
-      // Cria o usuário
+
       const usuario = await Usuario.create({
         nome,
         cpf: cpfLimpo,
@@ -124,7 +124,7 @@ class AuthController {
     }
   }
 
-  // Verifica se o token é válido
+
   async verificarToken(req, res) {
     try {
       return res.status(200).json({

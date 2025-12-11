@@ -1,4 +1,4 @@
-// backend/controllers/dashboardController.js
+
 const sequelize = require('../config/database')
 const { QueryTypes } = require('sequelize')
 const XLSX = require('xlsx')
@@ -6,14 +6,14 @@ const geminiService = require('../services/geminiService')
 
 exports.estatisticasGerais = async (req, res) => {
   try {
-    // Total de respondentes
+
     const totalResult = await sequelize.query(
       'SELECT COUNT(*) as total FROM resultados',
       { type: QueryTypes.SELECT }
     )
     const total = totalResult[0].total
 
-    // Contagem por classificação
+
     const classificacoes = await sequelize.query(`
       SELECT 
         classificacao,
@@ -26,7 +26,7 @@ exports.estatisticasGerais = async (req, res) => {
       type: QueryTypes.SELECT
     })
 
-    // Organiza os dados
+
     const estatisticas = {
       total,
       classificacoes: {
@@ -53,7 +53,7 @@ exports.estatisticasGerais = async (req, res) => {
       }
     }
 
-    // Preenche com os dados reais
+
     classificacoes.forEach(item => {
       if (estatisticas.classificacoes[item.classificacao]) {
         estatisticas.classificacoes[item.classificacao].quantidade = item.quantidade
@@ -78,7 +78,7 @@ exports.estatisticasGerais = async (req, res) => {
 
 exports.dadosGraficos = async (req, res) => {
   try {
-    // Dados por faixa etária
+
     const faixaEtaria = await sequelize.query(`
       SELECT 
         p.idade as faixa,
@@ -98,7 +98,7 @@ exports.dadosGraficos = async (req, res) => {
         END
     `, { type: QueryTypes.SELECT })
 
-    // Dados por uso principal
+
     const usoPrincipal = await sequelize.query(`
       SELECT 
         p.uso_principal,
@@ -163,7 +163,7 @@ exports.relatorioDetalhado = async (req, res) => {
 
 exports.exportarDados = async (req, res) => {
   try {
-    // Implementação futura para exportar CSV/Excel
+
     res.json({
       success: false,
       message: 'Funcionalidade de exportação ainda não implementada'
@@ -183,7 +183,7 @@ exports.gerarRelatorioIA = async (req, res) => {
   try {
     console.log('🤖 Iniciando análise com IA Gemini...')
 
-    // Busca todas as respostas do questionário
+
     const respostas = await sequelize.query(`
       SELECT 
         r.codigo_anonimo,
@@ -214,7 +214,7 @@ exports.gerarRelatorioIA = async (req, res) => {
       })
     }
 
-    // Chama o serviço do Gemini
+
     const resultado = await geminiService.analisarDados(respostas)
 
     if (resultado.success) {
@@ -224,7 +224,7 @@ exports.gerarRelatorioIA = async (req, res) => {
         data: resultado.data
       })
     } else {
-      // Fallback para análise manual
+
       console.log('⚠️ Erro na IA, usando análise manual como fallback:', resultado.error)
       const insights = analisarDadosManual(respostas)
       res.json({
@@ -238,7 +238,7 @@ exports.gerarRelatorioIA = async (req, res) => {
     console.error('❌ Erro ao gerar relatório:', error)
     
     try {
-      // Em caso de erro, busca dados novamente e retorna análise manual
+
       const respostas = await sequelize.query(`
         SELECT 
           r.codigo_anonimo,
@@ -272,7 +272,7 @@ exports.gerarRelatorioIA = async (req, res) => {
 exports.exportarExcel = async (req, res) => {
   try {
     console.log('📊 Iniciando exportação para Excel...')
-    // Busca todos os dados
+
     const dados = await sequelize.query(`
       SELECT 
         r.codigo_anonimo as "Código", -- Mude 'Código' para "Código"
@@ -310,13 +310,13 @@ exports.exportarExcel = async (req, res) => {
       })
     }
 
-    // Cria workbook
+
     const wb = XLSX.utils.book_new()
     
-    // Converte dados para sheet
+
     const ws = XLSX.utils.json_to_sheet(dados)
     
-    // Ajusta largura das colunas
+
     const wscols = [
       { wch: 20 }, // Código
       { wch: 18 }, // Data/Hora
@@ -334,22 +334,22 @@ exports.exportarExcel = async (req, res) => {
       { wch: 30 }, // Uso Principal
     ]
     
-    // Adiciona 20 colunas para as perguntas (P1-P20)
+
     for (let i = 0; i < 20; i++) {
       wscols.push({ wch: 5 })
     }
     
     ws['!cols'] = wscols
     
-    // Adiciona sheet ao workbook
+
     XLSX.utils.book_append_sheet(wb, ws, 'Respostas DigiSaúde')
 
-    // Gera buffer
+
     const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
 
     console.log('✅ Excel gerado com sucesso!')
 
-    // Define headers para download
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
     const filename = `digisaude_relatorio_${timestamp}.xlsx`
 
@@ -369,7 +369,7 @@ exports.exportarExcel = async (req, res) => {
   }
 }
 
-// Função auxiliar para análise manual (fallback)
+
 function analisarDadosManual(respostas) {
   if (!respostas.length) {
     return {
